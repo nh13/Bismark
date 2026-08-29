@@ -7,6 +7,12 @@ Bismark's methylation extractor, `bismark extract` (classic alias: `bismark_meth
 
 The default input format for `bismark extract` is BAM/SAM (or CRAM).
 
+### Input from a non-Bismark aligner
+
+`bismark extract` normally expects alignments produced by the Bismark aligner. If you have BAM/SAM/CRAM from a different bisulfite aligner that emits Bismark-format methylation-call tags (`XM`/`XR`/`XG`), you can extract from it directly with `--allow_discordant`. That option tolerates the record classes a general-purpose aligner produces but the Bismark aligner never does — cross-chromosome and discordant-orientation pairs, orphan reads whose mate is unmapped, and secondary/supplementary alignments. Without it, those records make the extractor stop with an error, so they would otherwise have to be removed first (for example with `samtools view -f 0x2 -F 0x900`). The option is off by default and does not change how Bismark's own alignments are extracted.
+
+One use for this is to keep Bismark's methylation calling while swapping in a faster aligner for the alignment step. In our own testing on a human WGBS slice, aligning with a general-purpose bisulfite aligner (`bwa-mem3 --meth`) and extracting through `bismark extract --allow_discordant` ran the alignment step roughly 6.5× faster than the Bowtie2-based Bismark aligner. Per-CpG methylation levels were highly concordant with the native Bismark pipeline (Pearson _r_ ≈ 0.97 across shared sites) at matching specificity; the native Bismark aligner kept a small per-read sensitivity edge, while the general-purpose aligner reported more uniquely-mapped pairs and slightly broader CpG coverage. Treat this as a starting point rather than a blanket recommendation — validate the calls on your own libraries (and check conversion controls) before adopting a different aligner in production.
+
 ### The methylation extractor output looks like this (tab separated):
 
 1. seq-ID

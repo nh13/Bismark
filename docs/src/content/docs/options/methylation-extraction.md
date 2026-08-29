@@ -37,6 +37,10 @@ A space-separated list of Bismark result files in SAM format from which methylat
 
   For paired-end data all methylation calls will be extracted irrespective of whether they overlap or not. Default: OFF.
 
+- `--allow_discordant`
+
+  Call methylation on records that a Bismark alignment never produces, so BAM/SAM/CRAM output from a general-purpose bisulfite aligner (one that emits Bismark-format `XM`/`XR`/`XG` tags) can be consumed directly — without a `samtools view -f 0x2 -F 0x900` pre-filter. With this option the extractor skips (and counts) secondary and supplementary alignments, calls cross-chromosome and same-chromosome discordant pairs independently (each mate against its own chromosome and strand), and calls orphan reads whose mate is unmapped. Every class is tallied in a dedicated section of the splitting report, and a warning is printed if more than 20% of records are orphans (usually a sign the input is not name-grouped). With the option off, the extractor's behaviour is byte-identical to before, including its cross-chromosome and unpaired-record errors. See also the "Input from a non-Bismark aligner" section of the methylation-extraction user guide. Default: OFF.
+
 - `--ignore <int>`
 
   Ignore the first &lt;int> bp from the 5' end of Read 1 (or single-end alignment files) when processing the methylation call string. This can remove e.g. a restriction enzyme site at the start of each read or any other source of bias (such as PBAT-Seq data).
